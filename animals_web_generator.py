@@ -10,18 +10,22 @@ animals_data = load_data('animals_data.json')
 with open('animals_template.html', 'r') as outfile:
     html_template = outfile.read()
 
-output = ''
-
-for animal in animals_data:
+def serialize_animal(animal_obj):
+    output = ''
     output += f'<li class="cards__item">'
-    output += f'<div class="card__title">{animal["name"]}</div>\n'
+    output += f'<div class="card__title">{animal_obj["name"]}</div>\n'
     output += '<p class="card__text">'
-    output += f'<strong>Diet:</strong> {animal["characteristics"].get("diet")}<br/>\n'
-    output += f'<strong>Location:</strong> {animal["locations"][0]}<br/>\n'
-    if animal['characteristics'].get('type'):
-        output += f'<strong>Type:</strong> {animal["characteristics"].get("type")}<br/>\n'
+    output += f'<strong>Diet:</strong> {animal_obj["characteristics"].get("diet")}<br/>\n'
+    output += f'<strong>Location:</strong> {animal_obj["locations"][0]}<br/>\n'
+    if animal_obj['characteristics'].get('type'):
+        output += f'<strong>Type:</strong> {animal_obj["characteristics"].get("type")}<br/>\n'
     output += '</p>'
     output += '</li>'
+    return output
+
+output = ''
+for animal_obj in animals_data:
+    output += serialize_animal(animal_obj)
 
 template = html_template.replace("__REPLACE_ANIMALS_INFO__", output)
 
