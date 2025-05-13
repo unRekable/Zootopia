@@ -6,5 +6,9 @@ def load_data(file_path):
     return json.load(handle)
 
 animals_data = load_data('animals_data.json')
-print(animals_data)
 
+for animal in animals_data:
+    print(f"Name: {animal['name']}")
+    print(f"Diet: {animal['characteristics'].get('diet')}")
+    print(f"Location: {animal['locations'][0]}")
+    print(f"Type: {animal['characteristics'].get('type')}")
