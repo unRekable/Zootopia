@@ -7,8 +7,8 @@ import json
 from typing import Any, Dict, List
 
 # Constants for filenames
-ANIMALS_DATA_FILE = 'animals_data.json'
-ANIMALS_TEMPLATE_FILE = 'animals_template.html'
+ANIMALS_DATA_FILE = 'data/animals_data.json'
+ANIMALS_TEMPLATE_FILE = 'template/animals_template.html'
 OUTPUT_HTML_FILE = 'animals.html'
 
 
