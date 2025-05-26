@@ -55,8 +55,7 @@ def serialize_animal(animal_obj: Dict[str, Any]) -> str:
 
     characteristics = animal_obj.get("characteristics", {})
     diet = characteristics.get("diet", "N/A")
-    # Assuming locations is a list and we need the first one; provide a default if locations is missing or empty.
-    locations_list = animal_obj.get("locations", ["N/A"])
+    locations_list = animal_obj.get("locations", [])
     location = locations_list[0] if locations_list else "N/A"
     animal_type = characteristics.get("type")
 
@@ -70,48 +69,78 @@ def serialize_animal(animal_obj: Dict[str, Any]) -> str:
     return "\n".join(output_parts)
 
 
+def build_all_animals_html(animals_list: List[Dict[str, Any]]) -> str:
+    """
+    Builds an HTML string for all animals by serializing each one.
+
+    Args:
+        animals_list (List[Dict[str, Any]]): A list of animal objects.
+
+    Returns:
+        str: A string containing HTML for all animals, concatenated.
+    """
+    all_animals_html_parts = []
+    for animal_obj in animals_list:
+        if isinstance(animal_obj, dict):
+            all_animals_html_parts.append(serialize_animal(animal_obj))
+        else:
+            print(f"Warning: Skipping non-dictionary item in animals_data: {animal_obj}")
+    return "\n".join(all_animals_html_parts)
+
+
+def generate_html_file(template_filepath: str, animals_html_content: str, output_filepath: str) -> bool:
+    """
+    Generates the animals HTML file from the template and animal data.
+
+    Args:
+        template_filepath (str): Path to the HTML template file.
+        animals_html_content (str): HTML string content for all animals.
+        output_filepath (str): Path where the final HTML file will be saved.
+
+    Returns:
+        bool: True if the file was generated successfully, False otherwise.
+    """
+    try:
+        with open(template_filepath, 'r', encoding="utf-8") as template_file:
+            html_template = template_file.read()
+    except FileNotFoundError:
+        print(f"Error: The template file {template_filepath} was not found.")
+        return False
+
+    final_html = html_template.replace("__REPLACE_ANIMALS_INFO__", animals_html_content)
+
+    try:
+        with open(output_filepath, 'w', encoding="utf-8") as outfile:
+            outfile.write(final_html)
+        print(f"The file '{output_filepath}' was successfully created.")
+        return True
+    except IOError:
+        print(f"Error: Could not write the file {output_filepath}.")
+        return False
+
+
 def main() -> None:
     """
     Main function of the script.
     Loads data, processes it, and writes the output HTML file.
     """
     animals_data = load_data(ANIMALS_DATA_FILE)
+
     if animals_data is None:
         print("The script will terminate due to an error loading animal data.")
         return
 
-    try:
-        with open(ANIMALS_TEMPLATE_FILE, 'r', encoding="utf-8") as template_file:
-            html_template = template_file.read()
-    except FileNotFoundError:
-        print(f"Error: The template file {ANIMALS_TEMPLATE_FILE} was not found.")
+    if not isinstance(animals_data, list):
+        print(f"Warning: Expected a list of animals, but got {type(animals_data)}. Cannot process.")
         print("The script will terminate.")
         return
 
-    all_animals_html = []
-    # Ensure animals_data is iterable and not None
-    if isinstance(animals_data, list):
-        for animal_obj in animals_data:
-            if isinstance(animal_obj, dict): # Process only if item is a dictionary
-                all_animals_html.append(serialize_animal(animal_obj))
-            else:
-                print(f"Warning: Skipping non-dictionary item in animals_data: {animal_obj}")
-    else:
-        print(f"Warning: Expected a list of animals, but got {type(animals_data)}. Cannot process.")
-        return
+    all_animals_html_str = build_all_animals_html(animals_data)
 
+    success = generate_html_file(ANIMALS_TEMPLATE_FILE, all_animals_html_str, OUTPUT_HTML_FILE)
 
-    # Use join for better performance and readability than repeated +=
-    output_html_content = "\n".join(all_animals_html)
-
-    final_html = html_template.replace("__REPLACE_ANIMALS_INFO__", output_html_content)
-
-    try:
-        with open(OUTPUT_HTML_FILE, 'w', encoding="utf-8") as outfile:
-            outfile.write(final_html)
-        print(f"The file '{OUTPUT_HTML_FILE}' was successfully created.")
-    except IOError:
-        print(f"Error: The file {OUTPUT_HTML_FILE} could not be written.")
+    if not success:
+        print("The script terminated due to an error generating the HTML file.")
 
 
 if __name__ == "__main__":
